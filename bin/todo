@@ -1,46 +1,11 @@
 #!/usr/bin/env ruby
+require_relative "../lib/todo"
 TODO_FILE = "todo.txt".freeze
-
-def read_todo(line) = line.chomp.split(",")
-
-def write_todo(file, name, created = Time.now, completed = "")
-  file.puts("#{name},#{created},#{completed}")
-end
 
 command = ARGV.shift
 
 case command
-when "new"
-  new_task = ARGV.shift
-  File.open(TODO_FILE, "a") do |file|
-    write_todo(file, new_task)
-    puts "Task added."
-  end
-when "list"
-  File.open(TODO_FILE, "r") do |file|
-    file.readlines.each_with_index do |line, line_number|
-      name, created, completed = read_todo(line)
-      printf("%3d - %s\n", line_number, name)
-      printf(" Created : %s\n", created)
-      unless completed.nil?
-        printf(" Completed : %s\n", completed)
-      end
-    end
-  end
-when "done"
-  task_number = ARGV.shift.to_i
-  File.open(TODO_FILE, "r") do |file|
-    File.open("#{TODO_FILE}.new", "w") do |new_file|
-      file.readlines.each_with_index do |line, line_number|
-        name, created, completed = read_todo(line)
-        if task_number.eql?(line_number)
-          write_todo(new_file, name, created, Time.now)
-          puts "Task #{line_number} completed"
-        else
-          write_todo(new_file, name, created, completed)
-        end
-      end
-    end
-  end
-  `mv #{TODO_FILE}.new #{TODO_FILE}`
+when "new" then Todo::New.call(ARGV.shift, TODO_FILE)
+when "list" then Todo::List.call(TODO_FILE)
+when "done" then Todo::Done.call(ARGV.shift.to_i, TODO_FILE)
 end
